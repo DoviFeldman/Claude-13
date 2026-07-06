@@ -7,7 +7,7 @@ Pages so you can pick a beach and drive to it.
 ## How it works
 
 ```
-GitHub Actions cron (every 5 min, 7 PM–midnight ET, not Saturday)
+GitHub Actions cron (every 5 min, 7 PM–midnight ET, not Friday)
         │
         ▼
 detector/main.py
@@ -57,12 +57,16 @@ to GLM, then Blitzortung.
 
 ### 1. Secrets (Settings → Secrets and variables → Actions → Secrets)
 
-| Secret | Value |
-|---|---|
-| `TARGET_LAT` / `TARGET_LON` | Your target coordinate (decimal degrees). Never appears in the repo. |
-| `XWEATHER_CLIENT_ID` / `XWEATHER_CLIENT_SECRET` | From your Xweather account |
-| `TELEGRAM_BOT_TOKEN` | From [@BotFather](https://t.me/BotFather) (`/newbot`) |
-| `TELEGRAM_CHAT_ID` | Message your bot once, then visit `https://api.telegram.org/bot<TOKEN>/getUpdates` and copy `message.chat.id` |
+| Secret | Required? | Value |
+|---|---|---|
+| `TARGET_LAT` / `TARGET_LON` | **yes** | Your target coordinate (decimal degrees). Never appears in the repo. |
+| `XWEATHER_CLIENT_ID` / `XWEATHER_CLIENT_SECRET` | no | From your Xweather account. Missing → source auto-disabled, GLM drives alerts. |
+| `TELEGRAM_BOT_TOKEN` | no | From [@BotFather](https://t.me/BotFather) (`/newbot`). Missing → no alerts, map still updates. |
+| `TELEGRAM_CHAT_ID` | no | Message your bot once, then visit `https://api.telegram.org/bot<TOKEN>/getUpdates` and copy `message.chat.id` |
+
+**Minimal free start:** set only `TARGET_LAT`/`TARGET_LON` and enable Pages —
+the NOAA GLM satellite source needs no account or key, so the map gets live
+strike data immediately. Add Xweather and Telegram whenever you're ready.
 
 ### 2. Variables (same page → Variables tab, all optional)
 
@@ -102,7 +106,7 @@ it doesn't, so Pages wins on simplicity.
 Cron runs every 5 minutes during `23:00–04:59 UTC` — the union of the
 7 PM–midnight window in EDT and EST. The script then checks real
 `America/New_York` time and exits unless it's 7 PM–midnight on a
-non-Saturday, so DST and the "evening spans two UTC days" problem are
+non-Friday, so DST and the "evening spans two UTC days" problem are
 handled exactly, at the cost of a few seconds of free runner time on the
 shoulder runs. (Running 24/7 instead would be simpler to read but ~4× the
 Xweather accesses and runner minutes — still free, but the window costs
@@ -138,6 +142,9 @@ scripts/make_icons.py   regenerates the PWA icons
 
 ```bash
 pip install -r requirements.txt
+# minimal (GLM-only, no alerts):
+TARGET_LAT=.. TARGET_LON=.. SKIP_TIME_GATE=true python -m detector.main
+# full:
 TARGET_LAT=.. TARGET_LON=.. XWEATHER_CLIENT_ID=.. XWEATHER_CLIENT_SECRET=.. \
 TELEGRAM_BOT_TOKEN=.. TELEGRAM_CHAT_ID=.. SKIP_TIME_GATE=true DRY_RUN=true \
 python -m detector.main

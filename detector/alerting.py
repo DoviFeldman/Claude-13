@@ -9,6 +9,9 @@ log = logging.getLogger(__name__)
 
 def send_telegram(cfg, text):
     """Send a message via the Bot API. Returns True on success."""
+    if not cfg.telegram_configured:
+        log.info("telegram not configured - alert suppressed:\n%s", text)
+        return False
     if cfg.dry_run:
         log.info("DRY RUN - would send Telegram message:\n%s", text)
         return True

@@ -44,12 +44,23 @@ class Config:
     skip_time_gate: bool = False     # manual runs can bypass the schedule window
     dry_run: bool = False            # log the alert instead of sending it
 
-    missing: list = field(default_factory=list)
+    missing: list = field(default_factory=list)   # hard requirements only
+    warnings: list = field(default_factory=list)  # optional features auto-disabled
+
+    @property
+    def telegram_configured(self):
+        return bool(self.telegram_bot_token and self.telegram_chat_id)
 
     @classmethod
     def from_env(cls):
+        """Only TARGET_LAT/TARGET_LON are required.
+
+        Missing Xweather creds just disable that source (GLM needs no
+        account at all), and missing Telegram creds skip alerting - the
+        map data still gets published either way.
+        """
         cfg = cls()
-        cfg.missing = []
+        cfg.missing, cfg.warnings = [], []
 
         lat, lon = os.environ.get("TARGET_LAT"), os.environ.get("TARGET_LON")
         if lat and lon:
@@ -59,15 +70,17 @@ class Config:
 
         cfg.xweather_client_id = os.environ.get("XWEATHER_CLIENT_ID", "")
         cfg.xweather_client_secret = os.environ.get("XWEATHER_CLIENT_SECRET", "")
-        if not (cfg.xweather_client_id and cfg.xweather_client_secret):
-            cfg.missing.append("XWEATHER_CLIENT_ID/XWEATHER_CLIENT_SECRET")
 
         cfg.telegram_bot_token = os.environ.get("TELEGRAM_BOT_TOKEN", "")
         cfg.telegram_chat_id = os.environ.get("TELEGRAM_CHAT_ID", "")
-        if not (cfg.telegram_bot_token and cfg.telegram_chat_id):
-            cfg.missing.append("TELEGRAM_BOT_TOKEN/TELEGRAM_CHAT_ID")
+        if not cfg.telegram_configured:
+            cfg.warnings.append("Telegram not configured - publishing map data only, no alerts")
 
         cfg.enable_xweather = _env_bool("ENABLE_XWEATHER", True)
+        if cfg.enable_xweather and not (cfg.xweather_client_id and cfg.xweather_client_secret):
+            cfg.enable_xweather = False
+            cfg.warnings.append("Xweather credentials missing - source disabled, "
+                                "alert decisions fall back to GLM")
         cfg.enable_glm = _env_bool("ENABLE_GLM", True)
         cfg.enable_blitzortung = _env_bool("ENABLE_BLITZORTUNG", True)
 

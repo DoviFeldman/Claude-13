@@ -5,7 +5,7 @@ on:
     # 7 PM - midnight Eastern, every 5 minutes. Cron is UTC, so this covers
     # the union of the EDT (23:00-03:59 UTC) and EST (00:00-04:59 UTC)
     # windows; the script itself checks America/New_York time and exits
-    # quietly outside 7 PM - midnight or on Saturdays, which makes DST and
+    # quietly outside 7 PM - midnight or on Friday nights, which makes DST and
     # the day-of-week boundary (the ET evening spans two UTC days) exact.
     # Note: scheduled runs can lag 5-15 min under GitHub load - acceptable here.
     - cron: "*/5 0-4,23 * * *"

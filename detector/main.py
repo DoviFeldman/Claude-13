@@ -1,7 +1,7 @@
 """Offshore lightning storm detector.
 
 Each run:
-  1. checks the schedule window (7 PM - midnight Eastern, not Saturday)
+  1. checks the schedule window (7 PM - midnight Eastern, not Friday)
   2. pulls recent strikes from every enabled source (Xweather primary,
      GOES GLM + Blitzortung for comparison)
   3. classifies each strike into a distance band from the target coordinate
@@ -34,11 +34,11 @@ STRIKES_PATH = REPO_ROOT / "docs" / "data" / "strikes.json"
 
 EASTERN = ZoneInfo("America/New_York")
 WINDOW_START_HOUR = 19  # 7 PM ET; window runs to midnight
-SKIP_WEEKDAY = 5        # Saturday
+SKIP_WEEKDAY = 4        # Friday night is off
 
 
 def in_schedule_window(now_local):
-    """True when we're inside 7 PM - midnight ET on a non-Saturday.
+    """True when we're inside 7 PM - midnight ET on a non-Friday.
 
     Cron fires in UTC; doing the day/hour check here in America/New_York
     handles DST for free.
@@ -99,6 +99,8 @@ def main():
     if cfg.missing:
         log.error("missing required secrets: %s", ", ".join(cfg.missing))
         return 1
+    for warning in cfg.warnings:
+        log.warning(warning)
 
     now_utc = dt.datetime.now(dt.timezone.utc)
     now_local = now_utc.astimezone(EASTERN)
