@@ -1,0 +1,44 @@
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; font-family: -apple-system, system-ui, sans-serif; }
+#map { position: fixed; inset: 0; background: #0b1020; }
+
+#topbar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+  display: flex; align-items: center; gap: 8px;
+  padding: calc(6px + env(safe-area-inset-top)) 10px 6px;
+  background: rgba(11, 16, 32, .88); color: #e8ecf6;
+  font-size: 13px; backdrop-filter: blur(6px);
+}
+#status { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#refresh {
+  border: 0; border-radius: 8px; padding: 4px 10px; font-size: 16px;
+  background: #223; color: #e8ecf6;
+}
+
+#toolbar {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 1000;
+  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+  padding: 8px 10px calc(8px + env(safe-area-inset-bottom));
+  background: rgba(11, 16, 32, .88); backdrop-filter: blur(6px);
+}
+#toolbar button, .src-chip {
+  border: 1px solid #39415e; border-radius: 999px;
+  padding: 6px 12px; font-size: 13px;
+  background: #161c33; color: #e8ecf6;
+}
+#toolbar button.active, .src-chip.active { background: #2f6fed; border-color: #2f6fed; }
+.src-chip.off { opacity: .45; text-decoration: line-through; }
+
+#measure-readout {
+  position: fixed; bottom: 64px; left: 50%; transform: translateX(-50%);
+  z-index: 1000; padding: 6px 14px; border-radius: 999px;
+  background: rgba(11, 16, 32, .92); color: #ffd75e;
+  font-size: 15px; font-weight: 600; white-space: nowrap;
+}
+
+.ring-label {
+  color: #5a6488; font-size: 11px; font-weight: 600;
+  text-shadow: 0 0 3px #fff, 0 0 3px #fff;
+  white-space: nowrap;
+}
+.leaflet-container { font: inherit; }

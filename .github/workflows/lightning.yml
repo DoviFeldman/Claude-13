@@ -1,0 +1,77 @@
+name: Lightning detector
+
+on:
+  schedule:
+    # 7 PM - midnight Eastern, every 5 minutes. Cron is UTC, so this covers
+    # the union of the EDT (23:00-03:59 UTC) and EST (00:00-04:59 UTC)
+    # windows; the script itself checks America/New_York time and exits
+    # quietly outside 7 PM - midnight or on Saturdays, which makes DST and
+    # the day-of-week boundary (the ET evening spans two UTC days) exact.
+    # Note: scheduled runs can lag 5-15 min under GitHub load - acceptable here.
+    - cron: "*/5 0-4,23 * * *"
+  workflow_dispatch:
+    inputs:
+      skip_time_gate:
+        description: "Run even outside the 7 PM - midnight ET window"
+        type: boolean
+        default: true
+      dry_run:
+        description: "Log the alert instead of sending Telegram"
+        type: boolean
+        default: false
+
+# Never let two runs race on the committed state/strikes files.
+concurrency:
+  group: lightning-detector
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  detect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run detector
+        env:
+          TARGET_LAT: ${{ secrets.TARGET_LAT }}
+          TARGET_LON: ${{ secrets.TARGET_LON }}
+          XWEATHER_CLIENT_ID: ${{ secrets.XWEATHER_CLIENT_ID }}
+          XWEATHER_CLIENT_SECRET: ${{ secrets.XWEATHER_CLIENT_SECRET }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          MAP_URL: ${{ vars.MAP_URL }}
+          ENABLE_XWEATHER: ${{ vars.ENABLE_XWEATHER || 'true' }}
+          ENABLE_GLM: ${{ vars.ENABLE_GLM || 'true' }}
+          ENABLE_BLITZORTUNG: ${{ vars.ENABLE_BLITZORTUNG || 'true' }}
+          SKIP_TIME_GATE: ${{ inputs.skip_time_gate || 'false' }}
+          DRY_RUN: ${{ inputs.dry_run || 'false' }}
+        run: python -m detector.main
+
+      - name: Commit strike data for the map site
+        run: |
+          git config user.name "lightning-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add docs/data/strikes.json data/state.json
+          if git diff --cached --quiet; then
+            echo "No data changes to commit."
+            exit 0
+          fi
+          git commit -m "data: update strikes $(date -u +%Y-%m-%dT%H:%MZ)"
+          # Rebase-and-retry in case another push landed meanwhile.
+          for i in 1 2 3; do
+            git push && exit 0
+            git pull --rebase
+          done
+          git push
