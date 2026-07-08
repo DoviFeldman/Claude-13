@@ -32,6 +32,13 @@ detector/main.py
 | CLOUD FLASHES | 150–250 km | "Heat lightning" look, flashes on cloud tops |
 | — | 250+ km | Ignored |
 
+**Offshore only:** strikes only count when their bearing from the target
+falls inside the offshore sector — by default 0°–180° (everything east of
+the north–south line, i.e. over the ocean for an east-facing coast).
+Storms over land never alert and never appear on the map. Adjust with the
+`OFFSHORE_BEARING_MIN` / `OFFSHORE_BEARING_MAX` variables (clockwise
+degrees, wraps past 360).
+
 The **sweet-spot alert** (30–60 km) is the primary trigger, with a 30-minute
 cooldown. A lower-frequency **approach warning** fires when ≥5 strikes sit in
 the 60–250 km wide zone (60-minute cooldown). If any strikes are inside
@@ -73,12 +80,16 @@ strike data immediately. Add Xweather and Telegram whenever you're ready.
 | Variable | Purpose |
 |---|---|
 | `MAP_URL` | Public URL of the map (e.g. `https://<user>.github.io/<repo>/`) — linked in every alert |
+| `OFFSHORE_BEARING_MIN` / `OFFSHORE_BEARING_MAX` | Offshore sector, clockwise degrees (default `0` / `180` = east of the N–S line) |
 | `ENABLE_XWEATHER` / `ENABLE_GLM` / `ENABLE_BLITZORTUNG` | `false` to toggle a source off |
 
 ### 3. GitHub Pages
 
 Settings → Pages → Source: **Deploy from a branch** → Branch: `main`,
 folder **`/docs`**. The map will be at `https://<user>.github.io/<repo>/`.
+
+(If Pages is set to the **root** folder instead, it still works — a root
+`index.html` redirects to the map at `…/<repo>/docs/`.)
 
 ### 4. Test it
 

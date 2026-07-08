@@ -52,6 +52,8 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           MAP_URL: ${{ vars.MAP_URL }}
+          OFFSHORE_BEARING_MIN: ${{ vars.OFFSHORE_BEARING_MIN || '0' }}
+          OFFSHORE_BEARING_MAX: ${{ vars.OFFSHORE_BEARING_MAX || '180' }}
           ENABLE_XWEATHER: ${{ vars.ENABLE_XWEATHER || 'true' }}
           ENABLE_GLM: ${{ vars.ENABLE_GLM || 'true' }}
           ENABLE_BLITZORTUNG: ${{ vars.ENABLE_BLITZORTUNG || 'true' }}
