@@ -55,6 +55,16 @@ def compass_point(bearing_deg):
     return COMPASS[int((bearing_deg + 11.25) // 22.5) % 16]
 
 
+def bearing_in_sector(bearing_deg, lo, hi):
+    """True if a bearing falls inside the sector lo..hi (clockwise, wraps 360)."""
+    bearing_deg %= 360
+    lo %= 360
+    hi %= 360
+    if lo <= hi:
+        return lo <= bearing_deg <= hi
+    return bearing_deg >= lo or bearing_deg <= hi
+
+
 def classify_band(distance_km):
     """Return (label, severity) for a distance, or None beyond max range."""
     for lo, hi, label, severity in BANDS:

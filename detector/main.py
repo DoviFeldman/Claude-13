@@ -23,7 +23,8 @@ from zoneinfo import ZoneInfo
 from . import alerting, state as state_mod
 from .config import Config
 from .geo import (DANGER_LIMIT, MAX_RANGE_KM, SWEET_SPOT, WIDE_ZONE,
-                  classify_band, compass_point, haversine_km, initial_bearing_deg)
+                  bearing_in_sector, classify_band, compass_point, haversine_km,
+                  initial_bearing_deg)
 from .providers import enabled_providers
 from .providers.base import ProviderError
 
@@ -47,13 +48,19 @@ def in_schedule_window(now_local):
 
 
 def enrich(strikes, cfg):
-    """Attach distance/bearing/band to each strike; drop anything beyond range."""
+    """Attach distance/bearing/band to each strike.
+
+    Drops anything beyond range or outside the offshore sector - strikes
+    over land (west of an east-facing coast) never alert or reach the map.
+    """
     kept = []
     for s in strikes:
         s.distance_km = haversine_km(cfg.target_lat, cfg.target_lon, s.lat, s.lon)
         if s.distance_km > MAX_RANGE_KM:
             continue
         s.bearing_deg = initial_bearing_deg(cfg.target_lat, cfg.target_lon, s.lat, s.lon)
+        if not bearing_in_sector(s.bearing_deg, cfg.offshore_min_deg, cfg.offshore_max_deg):
+            continue
         band = classify_band(s.distance_km)
         if band:
             s.band, s.severity = band

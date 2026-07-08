@@ -34,6 +34,13 @@ class Config:
     enable_glm: bool = True
     enable_blitzortung: bool = True
 
+    # Offshore sector: only strikes whose bearing from the target falls in
+    # this clockwise range count. Default 0-180 = everything east of the
+    # north-south line, i.e. over the ocean for an east-facing coast.
+    # Land-side strikes (west) are ignored entirely.
+    offshore_min_deg: float = 0.0
+    offshore_max_deg: float = 180.0
+
     # Behaviour
     lookback_minutes: int = 10       # strike recency window per run
     max_range_km: float = 250.0
@@ -83,6 +90,9 @@ class Config:
                                 "alert decisions fall back to GLM")
         cfg.enable_glm = _env_bool("ENABLE_GLM", True)
         cfg.enable_blitzortung = _env_bool("ENABLE_BLITZORTUNG", True)
+
+        cfg.offshore_min_deg = float(os.environ.get("OFFSHORE_BEARING_MIN", "0"))
+        cfg.offshore_max_deg = float(os.environ.get("OFFSHORE_BEARING_MAX", "180"))
 
         cfg.lookback_minutes = int(os.environ.get("LOOKBACK_MINUTES", "10"))
         cfg.map_url = os.environ.get("MAP_URL", "")
