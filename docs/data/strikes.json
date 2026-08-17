@@ -1,1 +1,1 @@
-{"generated":"2026-08-17T23:15:15Z","sources":{"glm":{"ok":true,"count":0},"blitzortung":{"ok":true,"count":0}},"strikes":[]}
+{"generated":"2026-08-17T23:39:40Z","sources":{"glm":{"ok":true,"count":2},"blitzortung":{"ok":true,"count":0}},"strikes":[{"lat":42.4233,"lon":-73.8756,"t":"2026-08-17T23:32:20Z","src":"glm","km":241.0,"brg":2,"band":"CLOUD FLASHES","sev":"far"},{"lat":42.4197,"lon":-73.8809,"t":"2026-08-17T23:35:00Z","src":"glm","km":240.6,"brg":2,"band":"CLOUD FLASHES","sev":"far"}]}
